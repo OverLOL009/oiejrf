@@ -1,0 +1,98 @@
+ <!DOCTYPE html>
+<html>
+<head>
+    <title>Gioco delle Wave</title>
+    <style>
+        body {
+            background-color: #3f69aa;
+            font-family: Arial, sans-serif;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            border: 2px solid white;
+            background-color: white;
+            color: #3f69aa;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        th, td {
+            border: 1px solid white;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #3f69aa;
+            color: white;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #3f69aa;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #output {
+            margin-top: 20px;
+            background-color: white;
+            color: #3f69aa;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tr>
+            <th>Numero di Buy necessari</th>
+            <th>Numero di Reward nella Wave</th>
+            <th>Player in gara</th>
+        </tr>
+        <tr>
+            <td id="buy-count"></td>
+            <td id="reward-count"></td>
+            <td id="current-player"></td>
+        </tr>
+    </table>
+    <button id="play-button">Gioca!</button>
+    <div id="output"></div>
+    <script>
+        const contractAddress = "CONTRACT_ADDRESS";
+        const apiKey = "YOUR_API_KEY";
+        const providerUrl = "https://mainnet.infura.io/v3/YOUR_API_KEY";
+        const provider = new ethers.providers.JsonRpcProvider(providerUrl);
+        const wallet = ethers.Wallet.createRandom();
+        const privateKey = wallet.privateKey;
+        const account = new ethers.Wallet(privateKey, provider);
+        const contractABI = [ABI_ARRAY];
+        const contract = new ethers.Contract(contractAddress, contractABI, account);
+
+        async function updateTable() {
+            const buyCount = await contract.buyCount();
+            const rewardCount = await contract.rewardCount();
+            const currentPlayer = await contract.currentPlayer();
+            document.getElementById("buy-count").innerHTML = buyCount.toString();
+            document.getElementById("reward-count").innerHTML = rewardCount.toString();
+            document.getElementById("current-player").innerHTML = currentPlayer.toString();
+        }
+
+        updateTable();
+
+        const playButton = document.getElementById("play-button");
+        const output = document.getElementById("output");
+
+        playButton.addEventListener("click", async function() {
+            const tx = await contract.play();
+            output.style.display = "block";
+            output.innerHTML = `Transazione avvenuta!<br>TX Hash: <a href="https://etherscan.io/tx/${tx.hash}" target="_blank">${tx.hash}</a>`;
+            updateTable();
+        });
+    </script>
+</body>
+</html>
